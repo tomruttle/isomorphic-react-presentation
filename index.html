@@ -35,8 +35,26 @@
 						<h3>The Basics</h3>
 						<ul>
 							<li>Isomorphic: The same code runs on both server and client</li>
-							<li>This is true up to a point</li>
-							<li>
+							<li>Page loads faster, and more seamlessly</li>
+							<li>Progressive enhancement</li>
+							<li>SEO</li>
+						</ul>
+					</section>
+					<section>
+						<ul>
+							<li>Share <strong><u>code</u></strong> between client and server at compile time (when bundling client assets)
+								<ul>
+									<li>e.g.: validation, transformations, API calls/handling</li>
+									<li>Suggest folder structure that makes it obvious which code is for client only</li>
+								</ul>
+							</li>
+							<li>Share <strong><u>state</u></strong> on a per-request basis by adding it to the DOM as part of your server's response</li>
+							<li><strong>Not everything can/should be sent to the client</strong>
+								<ul>
+									<li>Secrets, some user data, sensitive business logic, etc. should probably stay in an environment you control.</li>
+								</ul>
+							</li>
+						</ul>
 					</section>
 					<section>
 						<span>A simple form:</span>
@@ -84,20 +102,21 @@ ReactDOM.render(formEl, document.getElementById('app'));
 
 				<section>
 					<section>
-						<h3>React with native Javascript</h3>
+						<h3>React.DOM and native Javascript</h3>
 						<ul>
-							<li>React.DOM library has all of the HTML elements you need
-								<ul>
-									<li>(probably)</li>
-								</ul>
-							</li>
-							<li>Intuitive API - it works how you would expect</li>
+							<li>Use React.DOM with es2015+ if only targetting node v6 and modern browsers</li>
+							<li>Has an Intuitive API - it works how you would expect</li>
 							<li>No transpilation required
 								<ul>
 									<li>(Though still need to bundle client-side code)</li>
 								</ul>
 							</li>
-							<li>Great for prototyping, or for use with external component libraries</li>
+							<li>Best if creating a few, small components
+								<ul>
+									<li>prototyping</li>
+									<li>presentation components mostly coming from external component library</li>
+								</ul>
+							</li>
 						</ul>
 					</section>
 					<section>
@@ -158,6 +177,7 @@ switch (req.headers['content-type']) {
 				</section>
 				<section>
 					GIF here of the slow internet thing causing an issue
+					Image here of that ugly React client/server are different warning
 				</section>
 				<section>
 					<span>Presentation Component:</span>
