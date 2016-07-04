@@ -1,15 +1,15 @@
 const React = require('react');
-const { render } = require('react-dom');
+const ReactDOM = require('react-dom');
 
 const SimpleFormWrapper = require('./components/SimpleFormWrapper');
 
 const container = document.getElementById('app');
 const dataContainer = document.getElementById('props');
 
-const props = dataContainer.dataset.props;
-const form = React.createElement(SimpleFormWrapper, JSON.parse(props));
+const { props } = dataContainer.dataset;
+const formEl = React.createElement(SimpleFormWrapper, JSON.parse(props));
 
 const renderForm = () =>
-  render(form, container, () => { console.log('Loaded JS'); });
+  ReactDOM.render(formEl, container, () => { console.log('Loaded JS'); });
 
 setTimeout(renderForm, 2000);

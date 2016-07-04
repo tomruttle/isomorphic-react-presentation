@@ -24,8 +24,164 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+
+				<section>
+					<h2>Isomorphic React</h2>
+					<h4>A few tricks and tips</h4>
+				</section>
+
+				<section>
+					<section>
+						<h3>The Basics</h3>
+						<ul>
+							<li>Isomorphic: The same code runs on both server and client</li>
+							<li>This is true up to a point</li>
+							<li>
+					</section>
+					<section>
+						<span>A simple form:</span>
+						<pre><code data-trim>
+const React = require('react');
+
+const SimpleForm = () => (
+  <form method="post" action="/submit">
+    <h3>A Simple Form</h3>
+    <label htmlFor="text">Please input some text:</label>
+    <input type="text" name="text" />
+    <button type="submit">SUBMIT</button>
+  </form>
+);
+
+SimpleForm.propTypes = {
+  actionEndpoint: React.PropTypes.string.isRequired,
+};
+
+module.exports = SimpleForm;
+						</code></pre>
+					</section>
+					<section>
+	          <span>index.js:</span>
+						<pre><code data-trim>
+const formEl = React.createElement(SimpleForm, formProps);
+const markup = ReactDOM.renderToString(formEl);
+res.send(`
+&lt;!DOCTYPE html>
+&lt;html>
+  <div id="app">${markup}</div>
+  <div id="props" data-props=${JSON.stringify(formProps)}></div>
+  <script src="/dist/client.js"></script>
+&lt;/html>
+`);
+						</code></pre>
+	          <span>client.js:</span>
+	          <pre><code data-trim>
+const { props } = document.getElementById('props').dataset;
+const formEl = React.createElement(SimpleForm, JSON.parse(props));
+ReactDOM.render(formEl, document.getElementById('app'));
+	          </code></pre>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h3>React with native Javascript</h3>
+						<ul>
+							<li>React.DOM library has all of the HTML elements you need
+								<ul>
+									<li>(probably)</li>
+								</ul>
+							</li>
+							<li>Intuitive API - it works how you would expect</li>
+							<li>No transpilation required
+								<ul>
+									<li>(Though still need to bundle client-side code)</li>
+								</ul>
+							</li>
+							<li>Great for prototyping, or for use with external component libraries</li>
+						</ul>
+					</section>
+					<section>
+						<pre><code data-trim>
+const { DOM: r } = require('react');
+
+const SimpleForm = () =>
+  r.form(
+    { method: 'post', action: '/submit' },
+    r.h3({}, 'A simple Form'),
+    r.label({ htmlFor: 'text' }, 'Please input some text: '),
+    r.input({ type: 'text', name: 'text' }),
+    r.button({ type: 'submit' }, 'SUBMIT')
+  );
+
+SimpleForm.propTypes = {
+  actionEndpoint: React.PropTypes.string.isRequired,
+};
+
+module.exports = SimpleForm;
+						</code></pre>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h3>Progressive Enhancement</h3>
+						<blockquote>In an ideal world, your content will still work even if the user has turned off javascript,
+							or for whatever reason your client JS file fails to load or run.</blockquote>
+					</section>
+					<section>
+						<h4>Problem:</h4>
+						<span>How to </span>
+					</section>
+					<section>
+						<span>Content Negotiation:</span>
+						<pre><code data-trim>
+switch (req.headers['content-type']) {
+  case 'application/x-www-form-urlencoded':
+    return res.redirect(status, url);
+  case 'application/json':
+    return res.status(status).send();
+}
+						</code></pre>
+					</section>
+					<section>
+						<span>Refresh Header:</span>
+						<pre><code data-trim>
+	return res.status(status).set('Refresh', `0;url=${url}`).send();
+					</code></pre>
+				</section>
+			</section>
+
+			<section>
+				<section>
+					<h4>Problem:</h4>
+					Sometimes internet is slow, yo!
+				</section>
+				<section>
+					GIF here of the slow internet thing causing an issue
+				</section>
+				<section>
+					<span>Presentation Component:</span>
+					<pre><code data-trim>
+React.DOM.input({
+  type: 'text',
+  name: 'text',
+  ref: props.onMountText,
+  value: props.valueText,
+  onChange: props.onChangeText,
+})
+          </code></pre>
+					<span>Wrapper Component:</span>
+					<pre><code data-trim>
+onMountText(input) {
+  this.setState({
+    valueText: input.value,
+    isInvalid: this.validateForm(input.value),
+  });
+  input.focus();
+},
+					</code></pre>
+				</section>
+			</section>
 			</div>
 		</div>
 

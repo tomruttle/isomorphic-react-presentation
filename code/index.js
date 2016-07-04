@@ -21,8 +21,8 @@ function renderForm(req, res) {
     validValues,
   };
 
-  const form = React.createElement(SimpleFormWrapper, formProps);
-  const markup = ReactDOM.renderToString(form);
+  const formEl = React.createElement(SimpleFormWrapper, formProps);
+  const markup = ReactDOM.renderToString(formEl);
   return res.send(render({ markup, props: formProps }));
 }
 
