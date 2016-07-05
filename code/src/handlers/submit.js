@@ -29,7 +29,7 @@ const contentNegotiation = (req, res) => {
 
   switch (req.headers['content-type']) {
     case 'application/x-www-form-urlencoded':
-      return res.redirect(status, url);
+      return res.redirect(url);
     case 'application/json':
       return res.status(status).send();
   }
