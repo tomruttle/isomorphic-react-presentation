@@ -36,7 +36,7 @@ function SimpleForm(props) {
     r.button(
       {
         type: 'submit',
-        className: 'btn',
+        className: 'btn btn-primary',
         disabled: props.isInvalid,
       },
       'SUBMIT'

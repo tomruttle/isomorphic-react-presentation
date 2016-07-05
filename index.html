@@ -33,25 +33,22 @@
 						<aside class="notes">
 							<p>Who here has:</p>
 							<ul>
-								<li>Heard of React</li>
-								<li>Used React</li>
-								<li>Understands React</li>
-								<li>Used React on the server</li>
+								<li>Heard of React?</li>
+								<li>Used React?</li>
+								<li>Understands React?</li>
+								<li>Used React on the server?</li>
 							</ul>
 						</aside>
 					</section>
 					<section>
 						<h3>Who am I?</h3>
-						<p><a href="https://twitter.com/tomruttle">@tomruttle</a> almost everywhere
-							<aside class="notes">Boo @ places that don't let you change your usename (last.fm)</aside>
-						</p>
+						<p><a href="https://twitter.com/tomruttle">@tomruttle</a> almost everywhere</p>
+						<aside class="notes">Boo @ places that don't let you change your usename (last.fm)</aside>
 						<p>Working with Node.js for about 2.5 years</p>
-						<p>Working with React for a little over a year
-							<aside class="notes">For my day job!</aside>
-						</p>
-						<p>Almost zero front-end experience aside from React
-							<aside class="notes">I'm sure you'll all tell me I could have written this code in half the time using handlebars and jQuery...</aside>
-						</p>
+						<p>Working with React for a little over a year</p>
+						<aside class="notes">For my day job!</aside>
+						<p>Almost zero front-end experience aside from React</p>
+						<aside class="notes">I'm sure you'll all tell me I could have written this code in half the time using handlebars and jQuery...</aside>
 					</section>
 				</section>
 
@@ -60,10 +57,14 @@
 						<h3>Isomorphism: The Basics</h3>
 					</section>
 					<section>
-						<aside class="notes">A wholly inadequate </aside>
-						<p>Definition: The same code runs on both server and client</p>
-						<p class"fragment">React can render either to a DOM or to a String</p>
-						<aside class="notes">Here's what it looks like...</aside>
+						<blockquote>The same* code runs on both<br/>the server and the client</blockquote>
+						<aside class="notes">
+							<ul>
+								<li>*Albeit wrapped in environment-specific code and possibly transpiled</li>
+								<li>React can render either to a DOM or to a String</li>
+								<li>Here's what it looks like...</li>
+							</ul>
+						</aside>
 					</section>
 					<section>
 						<p>A very simple form in React:</p>
@@ -75,16 +76,16 @@
 								<li>This could be a ten-page mortgage application. The principles are the same.</li>
 							</ul>
 						</aside>
-						<pre><code data-trim>
+						<pre><code data-trim data-noescape>
 const React = require('react');
 
 const SimpleForm = ({ actionEndpoint }) => (
-  <form method="post" action={actionEndpoint}>
-    <h3>A Simple Form</h3>
-    <label htmlFor="text">Please input some text:</label>
-    <input type="text" name="text" />
-    <button type="submit">SUBMIT</button>
-  </form>
+  &lt;form method="post" action={actionEndpoint}>
+    &lt;h3>A Simple Form&lt;/h3>
+    &lt;label htmlFor="text">Please input some text:&lt;/label>
+    &lt;input type="text" name="text" />
+    &lt;button type="submit">SUBMIT&lt;/button>
+  &lt;/form>
 );
 
 SimpleForm.propTypes = {
@@ -95,124 +96,182 @@ module.exports = SimpleForm;
 						</code></pre>
 					</section>
 					<section>
+						<p>Here's what it looks like</p>
+						<small>(With a few Bootstrap CSS classes added)</small>
+					</section>
+					<section>
 	          <p>index.js:</p>
 						<aside class="notes">
 							<ul>
 								<li>On the server</li>
 								<li>Markup removed for space/clarity</li>
 								<li>Express syntax</li>
+								<li>`/dist/client.js` is the bundled React app</li>
 								<li>`formProps` is arbitrary data we want to share between server and client
 									<ul>
 										<li>Can only contain data that can be `JSON.stringify`d - dates are iffy and functions are a non-starter</li>
 										<li>Data is being sent to the client - be careful what you put in here</li>
-										<li>Best to send only state about the current request - unchanging data can be shared at compile time</li>
+										<li>Best to send only state about the current request - unchanging or un-stringable data can be shared when your client scripts are compiled</li>
 									</ul>
 								</li>
 								<li>Add props to markup on server, read from the DOM on client</li>
 						</aside>
-						<pre><code data-trim>
+						<pre><code data-trim data-noescape>
 const formEl = React.createElement(SimpleForm, formProps);
 const markup = ReactDOM.renderToString(formEl);
 res.send(`
 &lt;!DOCTYPE html>
 &lt;html>
-  <div id="app">${markup}</div>
-  <div id="props" data-props=${JSON.stringify(formProps)}></div>
-  <script src="/dist/client.js"></script>
+  &lt;div id="app">${markup}&lt;/div>
+  &lt;div id="props" data-props=${JSON.stringify(formProps)}>&lt;/div>
+  &lt;script src="/dist/client.js">&lt;/script>
 &lt;/html>
 `);
 						</code></pre>
 	          <span>client.js:</span>
-	          <pre><code data-trim>
+						<aside class="notes">
+							<ul>
+								<li>You can access the `data-` attributes for a DOM Element through its `.dataset` property</li>
+								<li>Don't forget to `JSON.parse` the string you get from the attribute!</li>
+							</ul>
+						</aside>
+	          <pre><code data-trim data-noescape>
 const { props } = document.getElementById('props').dataset;
 const formEl = React.createElement(SimpleForm, JSON.parse(props));
 ReactDOM.render(formEl, document.getElementById('app'));
 	          </code></pre>
 					</section>
 					<section>
-						<ul>
-							<li>Share <strong><u>code</u></strong> between client and server at compile time (when bundling client assets)
-								<ul>
-									<li>e.g.: validation, transformations, API calls/handling</li>
-									<li>Suggest folder structure that makes it obvious which code is for client only</li>
-								</ul>
-							</li>
-							<li>Share <strong><u>state</u></strong> on a per-request basis by adding it to the DOM as part of your server's response</li>
-							<li><strong>Not everything can/should be sent to the client</strong>
-								<ul>
-									<li>Secrets, some user data, sensitive business logic, etc. should probably stay in an environment you control.</li>
-								</ul>
-							</li>
-						</ul>
-					</section>
-					<section>
-						<p>Serving rendered markup from the server:</p>
-						<ul>
-							<li class="fragment"></li>
-								ServerFaster page loading
-								<aside class="notes">Sending rendered markup from the server
-							</li>
-							<li class="fragment">Progressive enhancement</li>
-							<li class="fragment">SEO</li>
-						</ul>
+						<p>Share <strong><u>functions</u></strong> when compiling your client scripts<br/>
+						<small>e.g. validation, transformations, API calls/handling</small></p>
+						<p>Share <strong><u>state</u></strong> per request<br/>
+						<small>by adding it to the markup in your server's response</small></p>
 						<aside class="notes">
-							TEST
-				    </aside>
+							<ul>
+								<li>Not everything can/should be sent to the client</li>
+								<li>Secrets, some user data, sensitive business logic, etc. should probably stay in an environment you control.</li>
+								<li>Suggest organising your code in a way that makes it obvious which code is for client only</li>
+							</ul>
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h3>Why bother?</h3>
 					</section>
 					<section>
 						<h3>Progressive Enhancement</h3>
-						<blockquote>In an ideal world, your content will still work even if the user has turned off javascript,
-							or for whatever reason your client JS file fails to load or run.</blockquote>
+						<p>Your app should perform as well as is possible given the conditions under which it is being run.</p>
+						<aside class="notes">
+							<ul>
+								<li>What "well" in that sentence is up to you.</li>
+								<li>Ideally, your app should perform basic functions even if the user has JS turned off, or if your scripts don't run or even arrive.</li>
+								<li>A client-only SPA will not work at all under these conditions</li>
+							</ul>
+						</aside>
+					</section>
+					<section>
+						<h3>Serving pre-rendered markup:</h3>
+						<ul>
+							<li class="fragment">SEO benefits<br/>
+								<small><ul>
+									<li>Your site is more easily crawlable by search engines</li>
+									<li>(Possibly no longer true. Google now crawls SPAs I think)</li>
+								</ul></small>
+							</li>
+							<li class="fragment">Faster to page impression</li>
+							<li class="fragment">Same layout and content on server/client
+								<small><ul>
+									<li>Code isn't coupled - it's the same</li>
+									<li>No layout jerking</li>
+								</ul></small>
+							</li>
+						</ul>
 					</section>
 				</section>
 
 				<section>
 					<section>
-						<h4>Problem:</h4>
-						<span>How to </span>
+						<h3>It's not all rosy</h3>
 					</section>
 					<section>
-						<span>Content Negotiation:</span>
-						<pre><code data-trim>
-switch (req.headers['content-type']) {
-  case 'application/x-www-form-urlencoded':
-    return res.redirect(url);
-  case 'application/json':
-    return res.status(status).send();
-}
-						</code></pre>
-					</section>
-					<section>
-						<span>Refresh Header:</span>
-						<pre><code data-trim>
-	return res.status(status).set('Refresh', `0;url=${url}`).send();
-						</code></pre>
-					</section>
-				</section>
-
-				<section>
-					<section>
-						<h4>Problem:</h4>
-						<p>Sometimes you need to have different props between client and server</p>
-						<aside class="notes">Example: server-side http request libraries need full URLs, on client-side, paths are usually better</aside>
-						<p>Then this happens:</p>
+						<h4>Problem</h4>
+						<p>Component props change between client and server</p>
+						<aside class="notes">
+							<p>Examples:</p>
+							<ul>
+								<li>server-side http request libraries require full URLs, on client-side,relative paths are sometimes better</li>
+								<li>a component takes a function as a required prop, but it's an action that can only happen on the client</li>
+							</ul>
+							<p>Then this happens:</p>
+						</aside>
 					</section>
 					<section>
 						<img src="/images/checksum-invalid-error.png" />
+						<p class="fragment">Don't ignore this error!<br/>
+						<small>More often than not it hints at more serious problems in your React inplementation.</small></p>
+						<aside class="notes">(Though it won't appear in the console in production)</aside>
 					</section>
 					<section>
-						<p>oh no!</p>
-					</section>
-				</section>
-
-				<section>
-					<section>
-						<h4>Problem:</h4>
-						<p>Sometimes internet is slow, yo!</p>
+						<p>Don't include changable props in your Component's markup</p>
+						<aside class="notes">
+							<p>That error is caused specifically by the React markup being different between client and server.</p>
+							<p>If you can refer to props through functions rather than putting them into the markup then do so.</p>
+						</aside>
 					</section>
 					<section>
-						GIF here of the slow internet thing causing an issue
-						Image here of that ugly React client/server are different warning
+						<h4>Problem</h4>
+						<p>Progressive enhancement means client behaves less predictably</p>
+					</section>
+					<section>
+						<h4>Example</h4>
+						<p>How to handle form submissions via XHR AND &lt;form> action</p>
+						<small class="fragment">
+							<p>Assumptions:</p>
+							<ul>
+								<li>After POSTing our data we want to be redirected somewhere</li>
+								<li>We'd prefer to return 'proper' HTTP status codes from our endpoint where possible</li>
+							</ul>
+						</small>
+						<aside class="notes">Here are two solutions:</aside>
+					</section>
+					<section>
+						<p>Content Negotiation:</p>
+						<pre><code data-trim>
+switch (req.headers['content-type']) {
+  case 'application/json':
+    return res.status(status).send();
+  case 'application/x-www-form-urlencoded':
+    return res.redirect(url);
+}
+						</code></pre>
+						<aside class="notes">
+							<ul>
+								<li>submitting a form sends a content type of `x-www-form-urlencoded`, while submitting a form with `fetch` or equivalivalent will usually have a content type of 'application/json'</li>
+								<li>will try to send correct status codes, and let the client handle redirection, but will fall back to 301 redirect otherwise</li>
+							</ul>
+						</aside>
+					</section>
+					<section>
+						<p>Refresh Header:</p>
+						<pre><code data-trim>
+	return res.status(status).set('Refresh', `0;url=${url}`).send();
+						</code></pre>
+						<aside class="notes">
+							<ul>
+								<li>Will always return the correct status code</li>
+								<li>Sends a pseudo-header which tells a browser to refresh itself at the given url after 0 seconds. The header can be ignored by an XHR client</li>
+								<li>The Refresh header has wide browser support, but is not in the HTTP spec and is not very well documented. YMMV</li>
+					</section>
+					<section>
+						<h4>Problem</h4>
+						<p>Sometimes the internet is slow!</p>
+						<small>How do we keep the Virtual DOM in sync with the DOM<br/>
+						when we don't know when the client-side scripts will be mounted?</small>
+					</section>
+					<section>
+						<p>Quick demo</p>
 					</section>
 					<section>
 						<span>Presentation Component:</span>
@@ -233,8 +292,18 @@ onMountText(input) {
     isInvalid: this.validateForm(input.value),
   });
   input.focus();
-},
+}
 						</code></pre>
+						<aside class="notes">
+							<p>Stateless functional components don't have a `this`, so cannot control their own `this.refs`.</p>
+							<o>We can pass through in the props for that component a callback to be called when the element is mounted, which will give us access to that element.</p>
+							<p>Problems:</p>
+							<ul>
+								<li>"Breaks encapsulation"</li>
+								<li>Feels kinda hacky</li>
+								<li>Might be tough to scale, particularly if using a state management tool like Redux</li>
+							</li>
+						</aside>
 					</section>
 				</section>
 
@@ -242,14 +311,13 @@ onMountText(input) {
 					<section>
 						<h3>React.DOM and native Javascript</h3>
 						<ul>
-							<li class="fragment">Use React.DOM with es2015+ if only targetting node v6 and modern browsers</li>
 							<li class="fragment">Has an Intuitive API - it works how you would expect</li>
 							<li class="fragment">No transpilation required <aside class="notes">Though still need to bundle client-side code</aside></li>
 							<li class="fragment">Best if creating a few, small components
-								<ul>
+								<small><ul>
 									<li class="fragment">prototyping</li>
 									<li class="fragment">presentation components mostly coming from external component library</li>
-								</ul>
+								</ul></small>
 							</li>
 						</ul>
 					</section>
@@ -274,6 +342,14 @@ module.exports = SimpleForm;
 						</code></pre>
 					</section>
 				</section>
+
+				<section>
+					<h2>Thank You.</h4>
+					<h4>Questions?</h4>
+					<small>
+						<a href="https://github.com/tomruttle/isomorphic-react-presentation">https://github.com/tomruttle/isomorphic-react-presentation</a><br/>
+						<a href="https://twitter.com/tomruttle">https://twitter.com/tomruttle</a>
+					</small>
 			</div>
 		</div>
 
